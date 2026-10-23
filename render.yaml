@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: faetec-coleta
+    env: docker
+    plan: free
+    envVars:
+      - key: ConnectionStrings__Default
+        sync: false
+      - key: ACCESS_PASSWORD
+        sync: false
