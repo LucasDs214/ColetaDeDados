@@ -1,0 +1,1325 @@
+{
+ "instruments": [
+  {
+   "id": "i1",
+   "code": 1,
+   "title": "Questionário Sociodemográfico e Condições de Vida / Nível de Atividade Física",
+   "moments": false,
+   "instruction": "Este instrumento é aplicado UMA única vez pelo entrevistador treinado.",
+   "computed": [],
+   "sections": [
+    {
+     "title": "Identificação",
+     "questions": [
+      {
+       "id": "i1_data_coleta",
+       "num": "2",
+       "type": "date",
+       "label": "Data da coleta",
+       "default": "today"
+      }
+     ]
+    },
+    {
+     "title": "Seção A — Dados pessoais",
+     "questions": [
+      {
+       "id": "q07_sexo_biologico",
+       "num": "7",
+       "type": "single",
+       "label": "Qual é o seu sexo biológico?",
+       "ref": "B01001a PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Homem"
+        },
+        {
+         "v": 2,
+         "l": "Mulher"
+        }
+       ]
+      },
+      {
+       "id": "q08_cor_raca",
+       "num": "8",
+       "type": "single",
+       "label": "Qual a sua cor ou raça?",
+       "ref": "B01002 PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Branca"
+        },
+        {
+         "v": 2,
+         "l": "Preta"
+        },
+        {
+         "v": 3,
+         "l": "Amarela"
+        },
+        {
+         "v": 4,
+         "l": "Parda"
+        },
+        {
+         "v": 5,
+         "l": "Indígena"
+        }
+       ]
+      },
+      {
+       "id": "q09_mora_com_mae",
+       "num": "9",
+       "type": "single",
+       "label": "Você mora com sua mãe?",
+       "ref": "B01006 PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim"
+        },
+        {
+         "v": 2,
+         "l": "Não"
+        }
+       ]
+      },
+      {
+       "id": "q10_pessoas_domicilio",
+       "num": "10",
+       "type": "single",
+       "label": "Contando com você, quantas pessoas moram na casa em que você vive?",
+       "options": [
+        {
+         "v": 1,
+         "l": "2 - 3"
+        },
+        {
+         "v": 2,
+         "l": "4 - 5"
+        },
+        {
+         "v": 3,
+         "l": "6 - 7"
+        },
+        {
+         "v": 4,
+         "l": "8 ou mais"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Seção B — Estilo de vida e hábitos alimentares",
+     "intro": "As próximas perguntas referem-se à sua alimentação. Leve em conta tudo o que você comeu em casa, na escola, na rua, em lanchonetes, em restaurantes ou em qualquer outro lugar.",
+     "questions": [
+      {
+       "id": "q11_cafe_manha",
+       "num": "11",
+       "type": "single",
+       "label": "Você costuma tomar o café da manhã?",
+       "ref": "B02019a PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim, todos os dias"
+        },
+        {
+         "v": 2,
+         "l": "Sim, 5 a 6 dias por semana"
+        },
+        {
+         "v": 3,
+         "l": "Sim, 3 a 4 dias por semana"
+        },
+        {
+         "v": 4,
+         "l": "Sim, 1 a 2 dias por semana"
+        },
+        {
+         "v": 5,
+         "l": "Raramente"
+        },
+        {
+         "v": 6,
+         "l": "Não"
+        }
+       ]
+      },
+      {
+       "id": "q12_refeicao_com_responsavel",
+       "num": "12",
+       "type": "single",
+       "label": "Você costuma almoçar ou jantar com sua mãe, pai ou responsável?",
+       "ref": "B02017a PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim, todos os dias"
+        },
+        {
+         "v": 2,
+         "l": "Sim, 5 a 6 dias por semana"
+        },
+        {
+         "v": 3,
+         "l": "Sim, 3 a 4 dias por semana"
+        },
+        {
+         "v": 4,
+         "l": "Sim, 1 a 2 dias por semana"
+        },
+        {
+         "v": 5,
+         "l": "Raramente"
+        },
+        {
+         "v": 6,
+         "l": "Não"
+        }
+       ]
+      },
+      {
+       "id": "q13_merenda_escolar",
+       "num": "13",
+       "type": "single",
+       "label": "Você costuma comer a comida/merenda oferecida pela escola? (Não considerar comida comprada na cantina)",
+       "ref": "B02020b PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim, todos os dias"
+        },
+        {
+         "v": 2,
+         "l": "Sim, 3 a 4 dias por semana"
+        },
+        {
+         "v": 3,
+         "l": "Sim, 1 a 2 dias por semana"
+        },
+        {
+         "v": 4,
+         "l": "Raramente"
+        },
+        {
+         "v": 5,
+         "l": "Não"
+        }
+       ]
+      },
+      {
+       "id": "q14_cantina_escola",
+       "num": "14",
+       "type": "single",
+       "label": "Tem cantina dentro da sua escola?",
+       "ref": "B02057 PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim"
+        },
+        {
+         "v": 2,
+         "l": "Não"
+        },
+        {
+         "v": 3,
+         "l": "Não sei"
+        }
+       ]
+      },
+      {
+       "id": "q14_1_compra_cantina",
+       "num": "14.1",
+       "type": "single",
+       "label": "Você costuma comprar alimentos/bebidas na cantina dentro da sua escola? (Não considerar a compra de água)",
+       "ref": "B02041a PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim, todos os dias"
+        },
+        {
+         "v": 2,
+         "l": "Sim, 3 a 4 dias por semana"
+        },
+        {
+         "v": 3,
+         "l": "Sim, 1 a 2 dias por semana"
+        },
+        {
+         "v": 4,
+         "l": "Raramente"
+        },
+        {
+         "v": 5,
+         "l": "Não costumo comprar alimentos/bebidas na cantina"
+        }
+       ],
+       "showIf": {
+        "q": "q14_cantina_escola",
+        "in": [
+         1
+        ]
+       }
+      },
+      {
+       "id": "q15_vendedores_rua",
+       "num": "15",
+       "type": "single",
+       "label": "Tem vendedores de rua (camelô ou ambulante) na porta ou ao redor da sua escola?",
+       "ref": "B02058 PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim"
+        },
+        {
+         "v": 2,
+         "l": "Não"
+        },
+        {
+         "v": 3,
+         "l": "Não sei"
+        }
+       ]
+      },
+      {
+       "id": "q15_1_compra_vendedores",
+       "num": "15.1",
+       "type": "single",
+       "label": "Você costuma comprar alimentos/bebidas de vendedores de rua (camelô ou ambulante) na porta ou ao redor da sua escola? (Não considerar a compra de água)",
+       "ref": "B02042a PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim, todos os dias"
+        },
+        {
+         "v": 2,
+         "l": "Sim, 3 a 4 dias por semana"
+        },
+        {
+         "v": 3,
+         "l": "Sim, 1 a 2 dias por semana"
+        },
+        {
+         "v": 4,
+         "l": "Raramente"
+        },
+        {
+         "v": 5,
+         "l": "Não costumo comprar alimentos/bebidas de vendedores de rua"
+        }
+       ],
+       "showIf": {
+        "q": "q15_vendedores_rua",
+        "in": [
+         1
+        ]
+       }
+      },
+      {
+       "id": "q16_medicamento_continuo",
+       "num": "16",
+       "type": "single",
+       "label": "Você faz uso de algum medicamento de uso contínuo?",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim"
+        },
+        {
+         "v": 2,
+         "l": "Não"
+        }
+       ]
+      },
+      {
+       "id": "q16_medicamentos",
+       "num": "16",
+       "type": "meds",
+       "label": "Medicamentos de uso contínuo (até 5)",
+       "showIf": {
+        "q": "q16_medicamento_continuo",
+        "in": [
+         1
+        ]
+       },
+       "optional": true
+      }
+     ]
+    },
+    {
+     "title": "Nível de atividade física",
+     "intro": "Agora vamos conversar sobre a prática de atividades físicas como dança, ballet, luta, ginástica, futebol, voleibol, basquete, handebol, caminhar, correr, andar de bicicleta, nadar etc. Primeiro, tente lembrar de como você foi e voltou à escola nos últimos 7 dias.",
+     "questions": [
+      {
+       "id": "q17_ativ_deslocamento_dias",
+       "num": "17",
+       "type": "single",
+       "label": "NOS ÚLTIMOS 7 DIAS, em quantos dias você FOI ou VOLTOU a pé ou de bicicleta para a escola?",
+       "ref": "B03001a1 e B03001a2 PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Nenhum dia nos últimos 7 dias"
+        },
+        {
+         "v": 2,
+         "l": "1 dia"
+        },
+        {
+         "v": 3,
+         "l": "2 dias"
+        },
+        {
+         "v": 4,
+         "l": "3 dias"
+        },
+        {
+         "v": 5,
+         "l": "4 dias"
+        },
+        {
+         "v": 6,
+         "l": "5 dias"
+        },
+        {
+         "v": 7,
+         "l": "5 dias mais sábado"
+        },
+        {
+         "v": 8,
+         "l": "5 dias mais sábado e domingo"
+        }
+       ]
+      },
+      {
+       "id": "q17_1_deslocamento_tempo",
+       "num": "17.1",
+       "type": "single",
+       "label": "Quando você VAI ou VOLTA para a escola a pé ou de bicicleta, quanto tempo você gasta?",
+       "ref": "B03002b1 e B03002b2 PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Menos de 10 minutos por dia"
+        },
+        {
+         "v": 2,
+         "l": "De 10 até 19 minutos por dia"
+        },
+        {
+         "v": 3,
+         "l": "De 20 até 29 minutos por dia"
+        },
+        {
+         "v": 4,
+         "l": "De 30 até 39 minutos por dia"
+        },
+        {
+         "v": 5,
+         "l": "De 40 até 49 minutos por dia"
+        },
+        {
+         "v": 6,
+         "l": "De 50 até 59 minutos por dia"
+        },
+        {
+         "v": 7,
+         "l": "1 hora ou mais por dia"
+        }
+       ],
+       "showIf": {
+        "q": "q17_ativ_deslocamento_dias",
+        "notIn": [
+         1
+        ]
+       }
+      },
+      {
+       "id": "q18_aulas_ef_dias",
+       "num": "18",
+       "type": "single",
+       "label": "NOS ÚLTIMOS 7 DIAS, quantos dias você TEVE aulas de educação física na escola? Não considere o tempo em atividades teóricas em sala de aula.",
+       "ref": "B03003b PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Nenhum dia nos últimos 7 dias"
+        },
+        {
+         "v": 2,
+         "l": "1 dia"
+        },
+        {
+         "v": 3,
+         "l": "2 dias"
+        },
+        {
+         "v": 4,
+         "l": "3 dias"
+        },
+        {
+         "v": 5,
+         "l": "4 dias"
+        },
+        {
+         "v": 6,
+         "l": "5 dias"
+        },
+        {
+         "v": 7,
+         "l": "5 dias mais sábado"
+        },
+        {
+         "v": 8,
+         "l": "5 dias mais sábado e domingo"
+        }
+       ]
+      },
+      {
+       "id": "q18_1_aulas_ef_tempo",
+       "num": "18.1",
+       "type": "single",
+       "label": "Quanto tempo por dia você FEZ atividade física ou praticou esporte durante as aulas de educação física na escola? Não considere o tempo gasto em atividades teóricas em sala de aula.",
+       "ref": "B03005c PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Não fiz atividade física na aula de educação física na escola nos últimos 7 dias"
+        },
+        {
+         "v": 2,
+         "l": "Menos de 10 minutos por dia"
+        },
+        {
+         "v": 3,
+         "l": "De 10 até 19 minutos por dia"
+        },
+        {
+         "v": 4,
+         "l": "De 20 até 29 minutos por dia"
+        },
+        {
+         "v": 5,
+         "l": "De 30 até 39 minutos por dia"
+        },
+        {
+         "v": 6,
+         "l": "De 40 até 49 minutos por dia"
+        },
+        {
+         "v": 7,
+         "l": "De 50 até 59 minutos por dia"
+        },
+        {
+         "v": 8,
+         "l": "De 1 hora até 1 hora e 19 minutos por dia"
+        },
+        {
+         "v": 9,
+         "l": "1 hora e 20 minutos ou mais por dia"
+        }
+       ]
+      },
+      {
+       "id": "q19_ativ_fisica_dias",
+       "num": "19",
+       "type": "single",
+       "label": "NOS ÚLTIMOS 7 DIAS, sem contar as aulas de educação física da escola e a ida ou volta a pé ou de bicicleta da escola, em quantos dias você praticou alguma atividade física?",
+       "ref": "B03006b PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Nenhum dia nos últimos 7 dias"
+        },
+        {
+         "v": 2,
+         "l": "1 dia"
+        },
+        {
+         "v": 3,
+         "l": "2 dias"
+        },
+        {
+         "v": 4,
+         "l": "3 dias"
+        },
+        {
+         "v": 5,
+         "l": "4 dias"
+        },
+        {
+         "v": 6,
+         "l": "5 dias"
+        },
+        {
+         "v": 7,
+         "l": "5 dias mais sábado"
+        },
+        {
+         "v": 8,
+         "l": "5 dias mais sábado e domingo"
+        }
+       ]
+      },
+      {
+       "id": "q19_1_ativ_fisica_tempo",
+       "num": "19.1",
+       "type": "single",
+       "label": "Quanto tempo por dia duraram essas atividades que você fez?",
+       "ref": "B03007b PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Menos de 10 minutos por dia"
+        },
+        {
+         "v": 2,
+         "l": "De 10 até 19 minutos por dia"
+        },
+        {
+         "v": 3,
+         "l": "De 20 até 29 minutos por dia"
+        },
+        {
+         "v": 4,
+         "l": "De 30 até 39 minutos por dia"
+        },
+        {
+         "v": 5,
+         "l": "De 40 até 49 minutos por dia"
+        },
+        {
+         "v": 6,
+         "l": "De 50 até 59 minutos por dia"
+        },
+        {
+         "v": 7,
+         "l": "De 1 hora até 1 hora e 19 minutos por dia"
+        },
+        {
+         "v": 8,
+         "l": "1 hora e 20 minutos ou mais por dia"
+        }
+       ],
+       "showIf": {
+        "q": "q19_ativ_fisica_dias",
+        "notIn": [
+         1
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "title": "Comportamento sedentário — tempo de tela e tempo sentado",
+     "intro": "As questões a seguir perguntam sobre atividades realizadas fora do horário escolar. Responda pensando nos últimos 7 dias.",
+     "questions": [
+      {
+       "id": "q20_tv_horas",
+       "num": "20",
+       "type": "single",
+       "label": "Quantas horas por dia você assiste a filmes, séries, novelas e outros programas de plataformas digitais de vídeo na televisão (TV)? (NÃO contar sábado, domingo e feriado)",
+       "ref": "B03009c PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Não assisto a televisão (TV)"
+        },
+        {
+         "v": 2,
+         "l": "Até 1 hora por dia"
+        },
+        {
+         "v": 3,
+         "l": "Mais de 1 hora até 2 horas por dia"
+        },
+        {
+         "v": 4,
+         "l": "Mais de 2 horas até 3 horas por dia"
+        },
+        {
+         "v": 5,
+         "l": "Mais de 3 horas até 4 horas por dia"
+        },
+        {
+         "v": 6,
+         "l": "Mais de 4 horas até 5 horas por dia"
+        },
+        {
+         "v": 7,
+         "l": "Mais de 5 horas até 6 horas por dia"
+        },
+        {
+         "v": 8,
+         "l": "Mais de 6 horas até 7 horas por dia"
+        },
+        {
+         "v": 9,
+         "l": "Mais de 7 horas até 8 horas por dia"
+        },
+        {
+         "v": 10,
+         "l": "Mais de 8 horas por dia"
+        },
+        {
+         "v": 11,
+         "l": "Não sei / não lembro"
+        }
+       ]
+      },
+      {
+       "id": "q21_sentado_horas",
+       "num": "21",
+       "type": "single",
+       "label": "Quantas horas por dia você costuma ficar sentado(a), assistindo televisão, jogando videogame, usando computador, celular, tablet ou fazendo outras atividades sentado(a)? (NÃO contar sábado, domingo, feriados ou o tempo sentado na escola)",
+       "ref": "B03010c PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Até 1 hora por dia"
+        },
+        {
+         "v": 2,
+         "l": "Mais de 1 hora até 2 horas por dia"
+        },
+        {
+         "v": 3,
+         "l": "Mais de 2 horas até 3 horas por dia"
+        },
+        {
+         "v": 4,
+         "l": "Mais de 3 horas até 4 horas por dia"
+        },
+        {
+         "v": 5,
+         "l": "Mais de 4 horas até 5 horas por dia"
+        },
+        {
+         "v": 6,
+         "l": "Mais de 5 horas até 6 horas por dia"
+        },
+        {
+         "v": 7,
+         "l": "Mais de 6 horas até 7 horas por dia"
+        },
+        {
+         "v": 8,
+         "l": "Mais de 7 horas até 8 horas por dia"
+        },
+        {
+         "v": 9,
+         "l": "Mais de 8 horas por dia"
+        },
+        {
+         "v": 10,
+         "l": "Não sei / não lembro"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "i2",
+   "code": 2,
+   "title": "Ficha de Avaliação Antropométrica",
+   "moments": true,
+   "momentOptions": [
+    {
+     "v": "M1",
+     "l": "M1 — Março (linha de base)"
+    },
+    {
+     "v": "M2",
+     "l": "M2 — Agosto"
+    },
+    {
+     "v": "M3",
+     "l": "M3 — Novembro"
+    }
+   ],
+   "instruction": "Registrar em TRÊS momentos: M1 (março), M2 (agosto) e M3 (novembro), conforme POP-Antrop-01. Realizar duas aferições para peso e estatura; admitir variação máxima de 0,5 cm na estatura e 0,1 kg no peso.",
+   "computed": [
+    "altura_media_cm",
+    "dif_altura_cm",
+    "imc",
+    "alerta_altura"
+   ],
+   "sections": [
+    {
+     "title": "Avaliação",
+     "questions": [
+      {
+       "id": "i2_data_coleta",
+       "num": "",
+       "type": "date",
+       "label": "Data da avaliação",
+       "default": "today"
+      },
+      {
+       "id": "q22_gravida",
+       "num": "22",
+       "type": "single",
+       "label": "APENAS PARA MENINAS. A aluna está grávida?",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim"
+        },
+        {
+         "v": 2,
+         "l": "Não"
+        }
+       ],
+       "showIf": {
+        "q": "q07_sexo_biologico",
+        "in": [
+         2
+        ]
+       }
+      },
+      {
+       "id": "q23_menarca",
+       "num": "23",
+       "type": "single",
+       "label": "APENAS PARA MENINAS. Com que idade você ficou menstruada pela primeira vez?",
+       "showIf": {
+        "q": "q07_sexo_biologico",
+        "in": [
+         2
+        ]
+       },
+       "options": [
+        {
+         "v": 1,
+         "l": "Ainda não menstruei"
+        },
+        {
+         "v": 2,
+         "l": "9 anos ou menos"
+        },
+        {
+         "v": 3,
+         "l": "10 anos"
+        },
+        {
+         "v": 4,
+         "l": "11 anos"
+        },
+        {
+         "v": 5,
+         "l": "12 anos ou mais"
+        }
+       ]
+      },
+      {
+       "id": "q24_peso_kg",
+       "num": "24",
+       "type": "number",
+       "label": "Peso",
+       "unit": "kg",
+       "min": 20,
+       "max": 250,
+       "step": 0.1
+      },
+      {
+       "id": "q25_altura1_cm",
+       "num": "25",
+       "type": "number",
+       "label": "Altura 1",
+       "unit": "cm",
+       "min": 100,
+       "max": 230,
+       "step": 0.1
+      },
+      {
+       "id": "q26_altura2_cm",
+       "num": "26",
+       "type": "number",
+       "label": "Altura 2",
+       "unit": "cm",
+       "min": 100,
+       "max": 230,
+       "step": 0.1
+      },
+      {
+       "id": "q27_avaliacao_questionario",
+       "num": "27",
+       "type": "multi",
+       "label": "O que você achou deste questionário? (pode marcar mais de uma opção)",
+       "ref": "B16001a PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Fácil"
+        },
+        {
+         "v": 2,
+         "l": "Difícil"
+        },
+        {
+         "v": 3,
+         "l": "Chato"
+        },
+        {
+         "v": 4,
+         "l": "Legal"
+        },
+        {
+         "v": 5,
+         "l": "Interessante"
+        },
+        {
+         "v": 6,
+         "l": "Informativo"
+        },
+        {
+         "v": 7,
+         "l": "Cansativo"
+        },
+        {
+         "v": 8,
+         "l": "Constrangedor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "i6",
+   "code": 6,
+   "title": "Nível Socioeconômico (CCEB 2026 — ABEP)",
+   "moments": false,
+   "instruction": "Assinale a quantidade de cada item existente no domicílio do(a) estudante. O escore e a classe são calculados automaticamente.",
+   "computed": [
+    "escore_bens",
+    "escore_instrucao",
+    "escore_servicos",
+    "escore_total",
+    "classe_economica",
+    "renda_media"
+   ],
+   "cutoffs": [
+    {
+     "class": "A",
+     "min": 73,
+     "max": 100,
+     "income": 28331.26
+    },
+    {
+     "class": "B1",
+     "min": 66,
+     "max": 72,
+     "income": 13636.18
+    },
+    {
+     "class": "B2",
+     "min": 55,
+     "max": 65,
+     "income": 7874.72
+    },
+    {
+     "class": "C1",
+     "min": 46,
+     "max": 54,
+     "income": 4526.88
+    },
+    {
+     "class": "C2",
+     "min": 35,
+     "max": 45,
+     "income": 2648.3
+    },
+    {
+     "class": "DE",
+     "min": 0,
+     "max": 34,
+     "income": 1177.55
+    }
+   ],
+   "sections": [
+    {
+     "title": "Data",
+     "questions": [
+      {
+       "id": "i6_data_coleta",
+       "num": "",
+       "type": "date",
+       "label": "Data da coleta",
+       "default": "today"
+      }
+     ]
+    },
+    {
+     "title": "Parte 1 — Posse de bens e serviços no domicílio",
+     "questions": [
+      {
+       "id": "cceb_banheiros",
+       "num": "",
+       "type": "single",
+       "label": "Banheiros",
+       "options": [
+        {
+         "v": 0,
+         "l": "0",
+         "points": 0
+        },
+        {
+         "v": 1,
+         "l": "1",
+         "points": 9
+        },
+        {
+         "v": 2,
+         "l": "2",
+         "points": 15
+        },
+        {
+         "v": 3,
+         "l": "3",
+         "points": 19
+        },
+        {
+         "v": 4,
+         "l": "4 ou mais",
+         "points": 20
+        }
+       ],
+       "group": "bens",
+       "layout": "inline"
+      },
+      {
+       "id": "cceb_empregados",
+       "num": "",
+       "type": "single",
+       "label": "Trabalhadores domésticos mensalistas",
+       "options": [
+        {
+         "v": 0,
+         "l": "0",
+         "points": 0
+        },
+        {
+         "v": 1,
+         "l": "1",
+         "points": 5
+        },
+        {
+         "v": 2,
+         "l": "2",
+         "points": 5
+        },
+        {
+         "v": 3,
+         "l": "3",
+         "points": 5
+        },
+        {
+         "v": 4,
+         "l": "4 ou mais",
+         "points": 5
+        }
+       ],
+       "group": "bens",
+       "layout": "inline"
+      },
+      {
+       "id": "cceb_automoveis",
+       "num": "",
+       "type": "single",
+       "label": "Automóveis de uso particular",
+       "options": [
+        {
+         "v": 0,
+         "l": "0",
+         "points": 0
+        },
+        {
+         "v": 1,
+         "l": "1",
+         "points": 4
+        },
+        {
+         "v": 2,
+         "l": "2",
+         "points": 8
+        },
+        {
+         "v": 3,
+         "l": "3",
+         "points": 10
+        },
+        {
+         "v": 4,
+         "l": "4 ou mais",
+         "points": 11
+        }
+       ],
+       "group": "bens",
+       "layout": "inline"
+      },
+      {
+       "id": "cceb_computador",
+       "num": "",
+       "type": "single",
+       "label": "Microcomputador (desktop / notebook)",
+       "options": [
+        {
+         "v": 0,
+         "l": "0",
+         "points": 0
+        },
+        {
+         "v": 1,
+         "l": "1",
+         "points": 6
+        },
+        {
+         "v": 2,
+         "l": "2",
+         "points": 11
+        },
+        {
+         "v": 3,
+         "l": "3",
+         "points": 13
+        },
+        {
+         "v": 4,
+         "l": "4 ou mais",
+         "points": 15
+        }
+       ],
+       "group": "bens",
+       "layout": "inline"
+      },
+      {
+       "id": "cceb_lava_loucas",
+       "num": "",
+       "type": "single",
+       "label": "Lava-louças",
+       "options": [
+        {
+         "v": 0,
+         "l": "0",
+         "points": 0
+        },
+        {
+         "v": 1,
+         "l": "1",
+         "points": 5
+        },
+        {
+         "v": 2,
+         "l": "2",
+         "points": 5
+        },
+        {
+         "v": 3,
+         "l": "3",
+         "points": 5
+        },
+        {
+         "v": 4,
+         "l": "4 ou mais",
+         "points": 5
+        }
+       ],
+       "group": "bens",
+       "layout": "inline"
+      },
+      {
+       "id": "cceb_geladeira",
+       "num": "",
+       "type": "single",
+       "label": "Geladeira",
+       "options": [
+        {
+         "v": 0,
+         "l": "0",
+         "points": 0
+        },
+        {
+         "v": 1,
+         "l": "1",
+         "points": 6
+        },
+        {
+         "v": 2,
+         "l": "2",
+         "points": 10
+        },
+        {
+         "v": 3,
+         "l": "3",
+         "points": 12
+        },
+        {
+         "v": 4,
+         "l": "4 ou mais",
+         "points": 13
+        }
+       ],
+       "group": "bens",
+       "layout": "inline"
+      },
+      {
+       "id": "cceb_maquina_lavar",
+       "num": "",
+       "type": "single",
+       "label": "Máquina de lavar roupa (automática ou semiautomática)",
+       "options": [
+        {
+         "v": 0,
+         "l": "0",
+         "points": 0
+        },
+        {
+         "v": 1,
+         "l": "1",
+         "points": 2
+        },
+        {
+         "v": 2,
+         "l": "2",
+         "points": 4
+        },
+        {
+         "v": 3,
+         "l": "3",
+         "points": 6
+        },
+        {
+         "v": 4,
+         "l": "4 ou mais",
+         "points": 6
+        }
+       ],
+       "group": "bens",
+       "layout": "inline"
+      },
+      {
+       "id": "cceb_micro_ondas",
+       "num": "",
+       "type": "single",
+       "label": "Micro-ondas",
+       "options": [
+        {
+         "v": 0,
+         "l": "0",
+         "points": 0
+        },
+        {
+         "v": 1,
+         "l": "1",
+         "points": 7
+        },
+        {
+         "v": 2,
+         "l": "2",
+         "points": 7
+        },
+        {
+         "v": 3,
+         "l": "3",
+         "points": 7
+        },
+        {
+         "v": 4,
+         "l": "4 ou mais",
+         "points": 7
+        }
+       ],
+       "group": "bens",
+       "layout": "inline"
+      }
+     ]
+    },
+    {
+     "title": "Parte 2 — Grau de instrução do(a) chefe da família",
+     "questions": [
+      {
+       "id": "cceb_instrucao_chefe",
+       "num": "",
+       "type": "single",
+       "label": "Grau de instrução do(a) chefe da família",
+       "group": "instrucao",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sem instrução",
+         "points": 0
+        },
+        {
+         "v": 2,
+         "l": "Ensino Fundamental incompleto",
+         "points": 3
+        },
+        {
+         "v": 3,
+         "l": "Ensino Fundamental completo",
+         "points": 4
+        },
+        {
+         "v": 4,
+         "l": "Ensino Médio incompleto",
+         "points": 5
+        },
+        {
+         "v": 5,
+         "l": "Ensino Médio completo",
+         "points": 6
+        },
+        {
+         "v": 6,
+         "l": "Ensino Superior incompleto",
+         "points": 6
+        },
+        {
+         "v": 7,
+         "l": "Ensino Superior completo",
+         "points": 7
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Parte 3 — Acesso a serviços públicos",
+     "questions": [
+      {
+       "id": "cceb_agua_encanada",
+       "num": "",
+       "type": "single",
+       "label": "Água encanada na residência",
+       "group": "servicos",
+       "options": [
+        {
+         "v": 1,
+         "l": "Sim",
+         "points": 10
+        },
+        {
+         "v": 2,
+         "l": "Não",
+         "points": 0
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

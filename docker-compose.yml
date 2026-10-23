@@ -1,0 +1,23 @@
+# O banco é definido no .env: SQLite (arquivo em volume) ou Postgres/Supabase.
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      Database__Provider: ${DB_PROVIDER}
+      ConnectionStrings__Default: ${DB_CONNECTION}
+      SEED_DEMO: ${SEED_DEMO:-true}
+    volumes:
+      - sqlitedata:/app/data
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  sqlitedata:
