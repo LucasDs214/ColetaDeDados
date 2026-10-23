@@ -4,7 +4,9 @@ services:
     env: docker
     plan: free
     envVars:
-      - key: ConnectionStrings__Default
+      - key: DB_CONNECTION
         sync: false
       - key: ACCESS_PASSWORD
         sync: false
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
