@@ -1,20 +1,32 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
-var builder = WebApplication.CreateBuilder(args);
+// Site (React compilado) em <pasta do app>/wwwroot, independente do diretório de trabalho do container
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = AppContext.BaseDirectory,
+    WebRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot"),
+});
 var cfg = builder.Configuration;
 
-// Banco configurável: "sqlite" (testes locais) ou "postgres" (Supabase / Postgres comum)
+// Banco configurável: "sqlite" (testes locais) ou "postgres" (Supabase / Postgres comum).
+// O tipo é detectado pela própria string de conexão, então Database__Provider é opcional.
 var provider = (cfg["Database:Provider"] ?? "sqlite").Trim().ToLower();
-var conn = cfg.GetConnectionString("Default") ?? throw new Exception("ConnectionStrings:Default não configurada");
+var conn = (cfg.GetConnectionString("Default") ?? throw new Exception("ConnectionStrings:Default não configurada")).Trim().Trim('"', '\'').Trim();
+if (conn.StartsWith("postgres", StringComparison.OrdinalIgnoreCase) || conn.Contains("Host=", StringComparison.OrdinalIgnoreCase)) provider = "postgres";
+if (provider == "postgres") conn = NormalizePg(conn);
 if (provider == "sqlite")
 {
     var file = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(conn).DataSource;
     Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(file))!);
 }
 else if (provider != "postgres") throw new Exception("Database:Provider deve ser 'sqlite' ou 'postgres'");
+Console.WriteLine($"Banco: {provider}");
 
 builder.Services.AddDbContext<Db>(o => { if (provider == "postgres") o.UseNpgsql(conn); else o.UseSqlite(conn); });
 builder.Services.AddSingleton(new Schema(Path.Combine(AppContext.BaseDirectory, "instruments.json")));
@@ -48,10 +60,37 @@ using (var scope = app.Services.CreateScope())
     if (created && cfg.GetValue("SEED_DEMO", true)) Seed.Run(db);
 }
 
+// ---- Trava de acesso opcional (não é login): senha única para quem abrir a URL pública ----
+// Ative definindo ACCESS_PASSWORD (e, se quiser, ACCESS_USER). O navegador mostra a caixa de senha nativa.
+var gatePass = cfg["ACCESS_PASSWORD"];
+if (!string.IsNullOrEmpty(gatePass))
+{
+    var expected = Encoding.UTF8.GetBytes($"{(string.IsNullOrEmpty(cfg["ACCESS_USER"]) ? "faetec" : cfg["ACCESS_USER"])}:{gatePass}");
+    app.Use(async (ctx, next) =>
+    {
+        if (ctx.Request.Path.StartsWithSegments("/api/health")) { await next(); return; }
+        var h = ctx.Request.Headers.Authorization.ToString();
+        if (h.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                if (CryptographicOperations.FixedTimeEquals(Convert.FromBase64String(h[6..].Trim()), expected)) { await next(); return; }
+            }
+            catch (FormatException) { }
+        }
+        ctx.Response.StatusCode = 401;
+        ctx.Response.Headers.WWWAuthenticate = "Basic realm=\"FAETEC Coleta\", charset=\"UTF-8\"";
+    });
+}
+
+// Site (React compilado) servido pela própria API: um único serviço/URL
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 static DateTime Utc(DateTime d) => DateTime.SpecifyKind(d, DateTimeKind.Utc);
 
 var api = app.MapGroup("/api");
-api.MapGet("/health", () => Results.Ok(new { ok = true }));
+api.MapGet("/health", () => Results.Ok(new { ok = true, banco = provider, site = File.Exists(Path.Combine(AppContext.BaseDirectory, "wwwroot", "index.html")) }));
 api.MapGet("/schema", (Schema s) => Results.Content(s.RawJson, "application/json"));
 
 // ---- Painel ----
@@ -172,7 +211,24 @@ api.MapGet("/export/{what}.csv", async (string what, bool? labels, bool? identif
     return Results.File(bytes, "text/csv; charset=utf-8", $"faetec_{what}_{DateTime.Now:yyyyMMdd_HHmm}{(ident ? "_identificado" : "")}.csv");
 });
 
+app.MapFallbackToFile("index.html");
+
 app.Run();
+
+/// Aceita a string no formato Npgsql ("Host=...;...") ou a URI que o Supabase mostra ("postgresql://usuario:senha@host:5432/postgres").
+static string NormalizePg(string c)
+{
+    if (!c.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) && !c.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)) return c;
+    var u = new Uri(c);
+    var ui = u.UserInfo.Split(':', 2);
+    var db = u.AbsolutePath.Trim('/');
+    return new Npgsql.NpgsqlConnectionStringBuilder
+    {
+        Host = u.Host, Port = u.Port > 0 ? u.Port : 5432, Database = db.Length > 0 ? db : "postgres",
+        Username = Uri.UnescapeDataString(ui[0]), Password = ui.Length > 1 ? Uri.UnescapeDataString(ui[1]) : "",
+        SslMode = Npgsql.SslMode.Require, TrustServerCertificate = true,
+    }.ConnectionString;
+}
 
 static string? Validate(ParticipantDto d)
 {
