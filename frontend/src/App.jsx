@@ -88,9 +88,9 @@ export default function App() {
           </div>
         </aside>
         <main className="content">
-          {cfg?.banco === 'sqlite' && !['localhost', '127.0.0.1'].includes(location.hostname) && (
+          {/*cfg?.banco === 'sqlite' && !['localhost', '127.0.0.1'].includes(location.hostname) && (
             <div className="note warn"><b>Atenção:</b> este servidor usa um banco temporário (SQLite). Os dados podem ser apagados quando ele reiniciar. Configure o banco Postgres/Supabase antes de coletar.</div>
-          )}
+          )*/}
           {err && <div className="note warn">Não foi possível carregar os instrumentos: {err}</div>}
           {!schema && !err && <p className="muted">Carregando…</p>}
           {page}
