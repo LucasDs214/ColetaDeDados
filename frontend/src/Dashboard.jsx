@@ -1,4 +1,5 @@
 import { go } from './router.js'
+import { ensureCadastro } from './gate.js'
 import { Icon, Avatar, Progress, Badge, theme, grad, ago } from './ui.jsx'
 
 function Art() {
@@ -66,7 +67,7 @@ export default function Dashboard({ schema, stats }) {
           <p>Fundação de Apoio à Escola Técnica (FAETEC). Escolha um instrumento, selecione o aluno e registre as respostas. Todos os dados são exportáveis em CSV para análise estatística.</p>
           <div className="herobtns">
             <button className="btn light" onClick={() => go('/participantes')}>Ver participantes</button>
-            <button className="btn outline" onClick={() => go('/participantes/novo')}><Icon name="plus" size={16} />Novo participante</button>
+            <button className="btn outline" onClick={async () => { if (await ensureCadastro()) go('/participantes/novo') }}><Icon name="plus" size={16} />Novo participante</button>
           </div>
           <div className="herostats"><span><b>{total}</b> participantes</span><span><b>{done}</b> de {goal} questionários completos</span></div>
         </div>

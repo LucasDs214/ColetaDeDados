@@ -9,8 +9,17 @@ public class Schema
 
     public Schema(string path)
     {
-        RawJson = File.ReadAllText(path);
-        Instruments = JsonNode.Parse(RawJson)!["instruments"]!.AsArray();
+        var root = JsonNode.Parse(File.ReadAllText(path))!;
+        Instruments = root["instruments"]!.AsArray();
+        // "hidden": true no instruments.json remove a pergunta de tudo (formulário, validação e CSV) sem apagá-la do arquivo
+        foreach (var inst in Instruments)
+            foreach (var sec in inst!["sections"]!.AsArray())
+            {
+                var qs = sec!["questions"]!.AsArray();
+                for (var i = qs.Count - 1; i >= 0; i--)
+                    if (qs[i]!["hidden"]?.GetValue<bool>() == true) qs.RemoveAt(i);
+            }
+        RawJson = root.ToJsonString();
     }
 
     public JsonNode? Get(string id) => Instruments.FirstOrDefault(i => i!["id"]!.GetValue<string>() == id);

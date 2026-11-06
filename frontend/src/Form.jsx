@@ -1,16 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from './ui.jsx'
 
 const today = () => new Date().toISOString().slice(0, 10)
 const brl = (n) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+const blank = (v) => v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0)
 
-// Condição sobre pergunta do MESMO instrumento: "in" só aparece após responder.
-// Sobre outro instrumento (ex.: sexo): aparece enquanto não informado.
-export const isVisible = (q, ctx, own) => {
+// Pergunta condicional: só aparece depois que a pergunta de origem recebe uma resposta que satisfaz a condição.
+export const isVisible = (q, ctx) => {
   const c = q.showIf
   if (!c) return true
   const v = ctx[c.q]
-  if (v === undefined || v === null) return own.has(c.q) ? !c.in : true
+  if (v === undefined || v === null) return false
   if (c.in) return c.in.includes(v)
   if (c.notIn) return !c.notIn.includes(v)
   return true
@@ -29,40 +29,76 @@ function cceb(inst, a) {
   return { ...sums, total, complete, cut: inst.cutoffs.find((c) => total >= c.min && total <= c.max) }
 }
 
-const blank = (v) => v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0)
-
-export default function Form({ inst, ctx, initial, onSave, saving }) {
+export default function Form({ inst, ctx, initial, updatedAt, draftKey, onSave, saving }) {
   const questions = useMemo(() => inst.sections.flatMap((s) => s.questions), [inst])
   const own = useMemo(() => new Set(questions.map((q) => q.id)), [questions])
-  const [a, setA] = useState(() => {
-    const d = { ...(initial || {}) }
-    for (const q of questions) if (q.default === 'today' && !d[q.id]) d[q.id] = today()
-    return d
-  })
-  const [missing, setMissing] = useState([])
-  const all = { ...ctx, ...a }
-  const set = (id, v) => { setA((p) => ({ ...p, [id]: v })); setMissing((m) => m.filter((x) => x !== id)) }
 
-  // Pergunta condicionada a outro instrumento ainda não respondido (ex.: Q22/Q23 sem sexo): não é obrigatória
-  const crossUnknown = (q) => q.showIf && !own.has(q.showIf.q) && all[q.showIf.q] == null
-  const required = questions.filter((q) => isVisible(q, all, own) && !q.optional && !crossUnknown(q))
+  // Rascunho local: se houver alterações não enviadas mais novas que o servidor, recupera.
+  const init = useMemo(() => {
+    let answers = { ...(initial || {}) }
+    let restored = false
+    try {
+      const raw = draftKey && localStorage.getItem(draftKey)
+      if (raw) {
+        const s = JSON.parse(raw)
+        if (!updatedAt || s.savedAt > new Date(updatedAt).getTime()) { answers = s.answers; restored = true }
+        else localStorage.removeItem(draftKey)
+      }
+    } catch { /* ignora */ }
+    for (const q of questions) if (q.default === 'today' && !answers[q.id]) answers[q.id] = today()
+    return { answers, restored }
+  }, []) // eslint-disable-line
+  const [a, setA] = useState(init.answers)
+  const [restored, setRestored] = useState(init.restored)
+  const [missing, setMissing] = useState([])
+  const [blockMsg, setBlockMsg] = useState('')
+  const dirty = useRef(init.restored)
+  const all = { ...ctx, ...a }
+
+  const set = (id, v) => { dirty.current = true; setA((p) => ({ ...p, [id]: v })); setMissing((m) => m.filter((x) => x !== id)) }
+
+  // Salva automaticamente no navegador a cada alteração (evita perder dados ao trocar de bloco)
+  useEffect(() => {
+    if (!dirty.current || !draftKey) return
+    try { localStorage.setItem(draftKey, JSON.stringify({ savedAt: Date.now(), answers: a })) } catch { /* cheio */ }
+  }, [a, draftKey])
+  useEffect(() => {
+    const warn = (e) => { if (dirty.current) { e.preventDefault(); e.returnValue = '' } }
+    addEventListener('beforeunload', warn)
+    return () => removeEventListener('beforeunload', warn)
+  }, [])
+
+  const discardLocal = () => {
+    try { localStorage.removeItem(draftKey) } catch { /* ignora */ }
+    const fresh = { ...(initial || {}) }
+    for (const q of questions) if (q.default === 'today' && !fresh[q.id]) fresh[q.id] = today()
+    setA(fresh); setRestored(false); dirty.current = false
+  }
+
+  // Perguntas que dependem de resposta em OUTRO instrumento (ex.: Q22/Q23 dependem do sexo, Instrumento 1)
+  const crossPending = questions.filter((q) => q.showIf && !own.has(q.showIf.q) && all[q.showIf.q] == null)
+  const needs = [...new Set(crossPending.map((q) => q.showIf.needs || q.showIf.q))]
+
+  const required = questions.filter((q) => isVisible(q, all) && !q.optional)
   const answered = required.filter((q) => !blank(a[q.id])).length
   const pct = required.length ? Math.round((answered / required.length) * 100) : 0
 
-  const submit = (status) => {
+  const submit = async (status) => {
+    setBlockMsg('')
     if (status === 'complete') {
+      if (needs.length) { setBlockMsg(`Para finalizar, informe antes: ${needs.join('; ')}.`); window.scrollTo({ top: 0, behavior: 'smooth' }); return }
       const miss = required.filter((q) => blank(a[q.id])).map((q) => q.id)
       setMissing(miss)
       if (miss.length) { document.getElementById('q-' + miss[0])?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return }
     }
     const out = {}
-    for (const q of questions) if (isVisible(q, all, own) && !blank(a[q.id])) out[q.id] = a[q.id]
-    onSave(status, out)
+    for (const q of questions) if (isVisible(q, all) && !blank(a[q.id])) out[q.id] = a[q.id]
+    const ok = await onSave(status, out)
+    if (ok) { try { localStorage.removeItem(draftKey) } catch { /* ignora */ } dirty.current = false }
   }
 
   const altDif = inst.id === 'i2' && a.q25_altura1_cm && a.q26_altura2_cm ? Math.abs(a.q25_altura1_cm - a.q26_altura2_cm) : null
   const c6 = inst.id === 'i6' ? cceb(inst, a) : null
-  const sexUnknown = questions.some(crossUnknown)
 
   return (
     <div className="form">
@@ -71,10 +107,16 @@ export default function Form({ inst, ctx, initial, onSave, saving }) {
         <div className="bar big"><i style={{ width: pct + '%' }} /></div>
       </div>
       <div className="note">{inst.instruction}</div>
-      {sexUnknown && <div className="note info">O sexo ainda não foi informado (Instrumento 1). As perguntas 22 e 23 são exclusivas para meninas e não são obrigatórias por enquanto.</div>}
+      {inst.who && <div className="note info"><b>Quem preenche:</b> {inst.who}</div>}
+      {restored && (
+        <div className="note warn">Recuperamos um rascunho não enviado deste formulário (salvo neste navegador). Revise e salve.{' '}
+          <button type="button" className="link" onClick={discardLocal}>Descartar e começar do último salvo</button></div>
+      )}
+      {needs.length > 0 && <div className="note info">As perguntas 22 e 23 são só para meninas e dependem de: {needs.join('; ')}. Elas aparecem quando esse dado estiver registrado.</div>}
+      {blockMsg && <div className="note warn"><b>{blockMsg}</b></div>}
 
       {inst.sections.map((s) => {
-        const qs = s.questions.filter((q) => isVisible(q, all, own))
+        const qs = s.questions.filter((q) => isVisible(q, all))
         if (!qs.length) return null
         return (
           <section key={s.title} className="card">
@@ -82,10 +124,13 @@ export default function Form({ inst, ctx, initial, onSave, saving }) {
             {s.intro && <p className="intro">{s.intro}</p>}
             {qs.map((q) => (
               <div key={q.id} id={'q-' + q.id} className={'q' + (missing.includes(q.id) ? ' missing' : '')}>
+                {q.intro && <div className="qintro">{q.intro}</div>}
                 <div className="qlabel">
                   {q.num && <b className="qnum">{q.num}</b>}{q.label}
+                  {q.who && <span className="who">{q.who}</span>}
                   {q.ref && <span className="ref">{q.ref}</span>}
                 </div>
+                {q.hint && <div className="hint">{q.hint}</div>}
                 <Field q={q} value={a[q.id]} onChange={(v) => set(q.id, v)} />
                 {missing.includes(q.id) && <div className="err">Resposta obrigatória</div>}
               </div>
@@ -95,7 +140,7 @@ export default function Form({ inst, ctx, initial, onSave, saving }) {
       })}
 
       {altDif !== null && altDif > 0.5 && (
-        <div className="note warn">Diferença entre as duas alturas: <b>{altDif.toFixed(1)} cm</b> (máximo admitido: 0,5 cm). Refaça a aferição.</div>
+        <div className="note warn">Diferença entre as duas alturas: <b>{altDif.toFixed(1).replace('.', ',')} cm</b> (máximo admitido: 0,5 cm). Refaça a aferição.</div>
       )}
 
       {c6 && (
@@ -120,18 +165,52 @@ export default function Form({ inst, ctx, initial, onSave, saving }) {
   )
 }
 
+// Peso e altura: só aceita dígitos e vírgula (ponto é bloqueado). Altura aceita cm (163,5) ou metros (1,63).
+function NumField({ q, value, onChange }) {
+  const isH = q.input === 'height'
+  const unit = isH ? 'cm' : q.unit
+  const [text, setText] = useState(() => (value == null ? '' : String(value).replace('.', ',')))
+  const [err, setErr] = useState('')
+  const [dot, setDot] = useState(false)
+
+  const parse = (raw) => {
+    const s = raw.toLowerCase().replace(isH ? /(cm|m)$/ : /(kg|g)$/, '')
+    if (!/^\d+(,\d{1,2})?$/.test(s)) return NaN
+    let v = Number(s.replace(',', '.'))
+    if (isH && v > 0 && v < 3) v *= 100          // 1,63 → 163 cm
+    return Math.round(v * 100) / 100
+  }
+  const change = (e) => {
+    setDot(e.target.value.includes('.'))
+    const t = e.target.value.replace(/[^0-9,a-zA-Z]/g, '')   // remove ponto, espaços e símbolos
+    setText(t)
+    if (!t) { setErr(''); onChange(undefined); return }
+    const v = parse(t)
+    if (Number.isNaN(v)) { setErr('Formato inválido. Use vírgula, por exemplo ' + (isH ? '163,5 ou 1,63' : '58,4') + '.'); onChange(undefined); return }
+    if (v < q.min || v > q.max) { setErr(`Valor fora da faixa (${String(q.min).replace('.', ',')} a ${String(q.max).replace('.', ',')} ${unit}).`); onChange(undefined); return }
+    setErr(''); onChange(v)
+  }
+  const interpreted = value != null && !err && text && String(value).replace('.', ',') !== text.replace(/[a-z]/gi, '')
+  return (
+    <div>
+      <div className="numrow">
+        <input className="inp" inputMode="decimal" autoComplete="off" placeholder={isH ? 'ex.: 163,5' : 'ex.: 58,4'} value={text}
+          onKeyDown={(e) => { if (e.key === '.') { e.preventDefault(); setDot(true) } }} onChange={change} />
+        <span>{unit}</span>
+      </div>
+      {interpreted && <div className="hint">Será registrado como <b>{String(value).replace('.', ',')} {unit}</b></div>}
+      {dot && <div className="err">Use vírgula (,) para os decimais. O ponto não é aceito.</div>}
+      {err && <div className="err">{err}</div>}
+    </div>
+  )
+}
+
 function Field({ q, value, onChange }) {
   switch (q.type) {
     case 'date':
       return <input className="inp" type="date" value={value || ''} onChange={(e) => onChange(e.target.value)} />
     case 'number':
-      return (
-        <div className="numrow">
-          <input className="inp" type="number" inputMode="decimal" step={q.step} min={q.min} max={q.max} value={value ?? ''}
-            onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))} />
-          <span>{q.unit}</span>
-        </div>
-      )
+      return <NumField q={q} value={value} onChange={onChange} />
     case 'single':
       return (
         <div className={'opts' + (q.layout === 'inline' ? ' inline' : '')}>

@@ -437,8 +437,14 @@
        ],
        "showIf": {
         "q": "q17_ativ_deslocamento_dias",
-        "notIn": [
-         1
+        "in": [
+         2,
+         3,
+         4,
+         5,
+         6,
+         7,
+         8
         ]
        }
       },
@@ -481,7 +487,8 @@
          "v": 8,
          "l": "5 dias mais sábado e domingo"
         }
-       ]
+       ],
+       "intro": "Agora tente lembrar das aulas de educação física NA ESCOLA nos últimos 7 dias."
       },
       {
        "id": "q18_1_aulas_ef_tempo",
@@ -526,7 +533,19 @@
          "v": 9,
          "l": "1 hora e 20 minutos ou mais por dia"
         }
-       ]
+       ],
+       "showIf": {
+        "q": "q18_aulas_ef_dias",
+        "in": [
+         2,
+         3,
+         4,
+         5,
+         6,
+         7,
+         8
+        ]
+       }
       },
       {
        "id": "q19_ativ_fisica_dias",
@@ -567,7 +586,8 @@
          "v": 8,
          "l": "5 dias mais sábado e domingo"
         }
-       ]
+       ],
+       "intro": "Agora tente lembrar das práticas de atividade física nos últimos 7 dias, SEM CONTAR as aulas de Educação Física na escola e a ida ou volta a pé ou de bicicleta da escola."
       },
       {
        "id": "q19_1_ativ_fisica_tempo",
@@ -611,8 +631,14 @@
        ],
        "showIf": {
         "q": "q19_ativ_fisica_dias",
-        "notIn": [
-         1
+        "in": [
+         2,
+         3,
+         4,
+         5,
+         6,
+         7,
+         8
         ]
        }
       }
@@ -626,7 +652,7 @@
        "id": "q20_tv_horas",
        "num": "20",
        "type": "single",
-       "label": "Quantas horas por dia você assiste a filmes, séries, novelas e outros programas de plataformas digitais de vídeo na televisão (TV)? (NÃO contar sábado, domingo e feriado)",
+       "label": "Quantas horas por dia você assiste a filmes, séries, novelas e outros programas de plataformas digitais de vídeo na televisão (TV)?",
        "ref": "B03009c PeNSE 2024",
        "options": [
         {
@@ -679,7 +705,7 @@
        "id": "q21_sentado_horas",
        "num": "21",
        "type": "single",
-       "label": "Quantas horas por dia você costuma ficar sentado(a), assistindo televisão, jogando videogame, usando computador, celular, tablet ou fazendo outras atividades sentado(a)? (NÃO contar sábado, domingo, feriados ou o tempo sentado na escola)",
+       "label": "Quantas horas por dia você costuma ficar sentado(a), assistindo televisão, jogando videogame, usando computador, celular, tablet ou fazendo outras atividades sentado(a)?",
        "ref": "B03010c PeNSE 2024",
        "options": [
         {
@@ -726,7 +752,8 @@
       }
      ]
     }
-   ]
+   ],
+   "who": "Respondido pelo(a) aluno(a); o(a) pesquisador(a) conduz a aplicação e registra as respostas."
   },
   {
    "id": "i2",
@@ -763,7 +790,8 @@
        "num": "",
        "type": "date",
        "label": "Data da avaliação",
-       "default": "today"
+       "default": "today",
+       "who": "Pesquisador(a)"
       },
       {
        "id": "q22_gravida",
@@ -784,7 +812,8 @@
         "q": "q07_sexo_biologico",
         "in": [
          2
-        ]
+        ],
+        "needs": "Instrumento 1, pergunta 7 (sexo biológico)"
        }
       },
       {
@@ -796,7 +825,8 @@
         "q": "q07_sexo_biologico",
         "in": [
          2
-        ]
+        ],
+        "needs": "Instrumento 1, pergunta 7 (sexo biológico)"
        },
        "options": [
         {
@@ -829,7 +859,9 @@
        "unit": "kg",
        "min": 20,
        "max": 250,
-       "step": 0.1
+       "step": 0.1,
+       "hint": "Use vírgula para os decimais. Exemplo: 58,4",
+       "who": "Pesquisador(a)"
       },
       {
        "id": "q25_altura1_cm",
@@ -839,7 +871,10 @@
        "unit": "cm",
        "min": 100,
        "max": 230,
-       "step": 0.1
+       "step": 0.1,
+       "input": "height",
+       "who": "Pesquisador(a)",
+       "hint": "Use vírgula. Digite em centímetros (ex.: 163,5) ou em metros (ex.: 1,63)."
       },
       {
        "id": "q26_altura2_cm",
@@ -849,52 +884,15 @@
        "unit": "cm",
        "min": 100,
        "max": 230,
-       "step": 0.1
-      },
-      {
-       "id": "q27_avaliacao_questionario",
-       "num": "27",
-       "type": "multi",
-       "label": "O que você achou deste questionário? (pode marcar mais de uma opção)",
-       "ref": "B16001a PeNSE 2024",
-       "options": [
-        {
-         "v": 1,
-         "l": "Fácil"
-        },
-        {
-         "v": 2,
-         "l": "Difícil"
-        },
-        {
-         "v": 3,
-         "l": "Chato"
-        },
-        {
-         "v": 4,
-         "l": "Legal"
-        },
-        {
-         "v": 5,
-         "l": "Interessante"
-        },
-        {
-         "v": 6,
-         "l": "Informativo"
-        },
-        {
-         "v": 7,
-         "l": "Cansativo"
-        },
-        {
-         "v": 8,
-         "l": "Constrangedor"
-        }
-       ]
+       "step": 0.1,
+       "input": "height",
+       "who": "Pesquisador(a)",
+       "hint": "Use vírgula. Digite em centímetros (ex.: 163,5) ou em metros (ex.: 1,63)."
       }
      ]
     }
-   ]
+   ],
+   "who": "Peso e altura: medidos e registrados pelo(a) pesquisador(a). Perguntas 22 e 23: respondidas pela aluna."
   },
   {
    "id": "i6",
@@ -968,7 +966,7 @@
        "id": "cceb_banheiros",
        "num": "",
        "type": "single",
-       "label": "Banheiros",
+       "label": "Quantos banheiros tem na sua casa?",
        "options": [
         {
          "v": 0,
@@ -1003,7 +1001,7 @@
        "id": "cceb_empregados",
        "num": "",
        "type": "single",
-       "label": "Trabalhadores domésticos mensalistas",
+       "label": "Quantas empregadas domésticas trabalham na sua casa todos os dias (mensalistas)?",
        "options": [
         {
          "v": 0,
@@ -1032,13 +1030,14 @@
         }
        ],
        "group": "bens",
-       "layout": "inline"
+       "layout": "inline",
+       "hint": "Conte só quem trabalha na casa todos os dias. Diaristas, que vão apenas alguns dias, não entram na contagem."
       },
       {
        "id": "cceb_automoveis",
        "num": "",
        "type": "single",
-       "label": "Automóveis de uso particular",
+       "label": "Quantos automóveis de uso particular (carros) tem na sua casa?",
        "options": [
         {
          "v": 0,
@@ -1073,7 +1072,7 @@
        "id": "cceb_computador",
        "num": "",
        "type": "single",
-       "label": "Microcomputador (desktop / notebook)",
+       "label": "Quantos computadores (de mesa ou notebook) tem na sua casa?",
        "options": [
         {
          "v": 0,
@@ -1108,7 +1107,7 @@
        "id": "cceb_lava_loucas",
        "num": "",
        "type": "single",
-       "label": "Lava-louças",
+       "label": "Quantas máquinas de lavar louça tem na sua casa?",
        "options": [
         {
          "v": 0,
@@ -1143,7 +1142,7 @@
        "id": "cceb_geladeira",
        "num": "",
        "type": "single",
-       "label": "Geladeira",
+       "label": "Quantas geladeiras tem na sua casa?",
        "options": [
         {
          "v": 0,
@@ -1178,7 +1177,7 @@
        "id": "cceb_maquina_lavar",
        "num": "",
        "type": "single",
-       "label": "Máquina de lavar roupa (automática ou semiautomática)",
+       "label": "Quantas máquinas de lavar roupa (automática ou semiautomática) tem na sua casa?",
        "options": [
         {
          "v": 0,
@@ -1213,7 +1212,7 @@
        "id": "cceb_micro_ondas",
        "num": "",
        "type": "single",
-       "label": "Micro-ondas",
+       "label": "Quantos micro-ondas tem na sua casa?",
        "options": [
         {
          "v": 0,
@@ -1318,8 +1317,56 @@
        ]
       }
      ]
+    },
+    {
+     "title": "Encerramento",
+     "intro": "Por fim, conte o que você achou dos questionários que respondeu.",
+     "questions": [
+      {
+       "id": "q27_avaliacao_questionario",
+       "num": "27",
+       "type": "multi",
+       "label": "O que você achou deste questionário? (pode marcar mais de uma opção)",
+       "ref": "B16001a PeNSE 2024",
+       "options": [
+        {
+         "v": 1,
+         "l": "Fácil"
+        },
+        {
+         "v": 2,
+         "l": "Difícil"
+        },
+        {
+         "v": 3,
+         "l": "Chato"
+        },
+        {
+         "v": 4,
+         "l": "Legal"
+        },
+        {
+         "v": 5,
+         "l": "Interessante"
+        },
+        {
+         "v": 6,
+         "l": "Informativo"
+        },
+        {
+         "v": 7,
+         "l": "Cansativo"
+        },
+        {
+         "v": 8,
+         "l": "Constrangedor"
+        }
+       ]
+      }
+     ]
     }
-   ]
+   ],
+   "who": "Respondido pelo(a) aluno(a) sobre a própria casa, com apoio do(a) pesquisador(a). A pergunta final sobre os questionários encerra toda a coleta."
   }
  ]
 }

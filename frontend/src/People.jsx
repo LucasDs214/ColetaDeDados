@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { api } from './api.js'
 import { go } from './router.js'
 import { Icon, Avatar, Badge, toast, theme, grad, ago } from './ui.jsx'
+import { ensureCadastro } from './gate.js'
 
 const stOf = (rs, inst, m = 'M1') => rs.find((x) => x.instrument === inst && x.moment === m)?.status
 const SLOTS = [['i1', 'M1', 'I1'], ['i2', 'M1', 'M1'], ['i2', 'M2', 'M2'], ['i2', 'M3', 'M3'], ['i6', 'M1', 'I6']]
@@ -22,7 +23,10 @@ export function People({ params }) {
   return (
     <>
       <div className="sectionhead"><h2>Participantes <span className="count">{list.length}</span></h2>
-        <button className="btn" onClick={() => go('/participantes/novo')}><Icon name="plus" size={16} />Novo participante</button></div>
+        <div className="pactions">
+          <button className="btn ghost" onClick={async () => { if (await ensureCadastro()) go('/participantes/importar') }}><Icon name="file" size={16} />Importar cadastro (CSV)</button>
+          <button className="btn" onClick={async () => { if (await ensureCadastro()) go('/participantes/novo') }}><Icon name="plus" size={16} />Novo participante</button>
+        </div></div>
       <div className="toolbar">
         <div className="field"><Icon name="search" size={16} /><input placeholder="Buscar por nome ou ID…" value={q} onChange={(e) => setQ(e.target.value)} /></div>
         <select className="inp" value={school} onChange={(e) => setSchool(e.target.value)}>
@@ -59,8 +63,9 @@ export function Detail({ id, schema }) {
   if (p === false) return <p>Participante não encontrado.</p>
   if (!p) return <p className="muted">Carregando…</p>
   const remove = async () => {
+    if (!(await ensureCadastro())) return
     if (!confirm(`Excluir ${p.fullName} e todas as respostas dele(a)? Esta ação não pode ser desfeita.`)) return
-    await api.deleteParticipant(id); toast('Participante excluído'); go('/participantes')
+    try { await api.deleteParticipant(id); toast('Participante excluído'); go('/participantes') } catch (x) { toast(x.message, 'err') }
   }
   const done = SLOTS.filter(([i, m]) => stOf(p.responses, i, m) === 'complete').length
   return (
@@ -75,7 +80,7 @@ export function Detail({ id, schema }) {
         </div>
         <div className="pactions">
           <span className="chip light">{done} de {SLOTS.length} completos</span>
-          <button className="btn ghost sm" onClick={() => go(`/participantes/${id}/editar`)}><Icon name="edit" size={14} />Editar</button>
+          <button className="btn ghost sm" onClick={async () => { if (await ensureCadastro()) go(`/participantes/${id}/editar`) }}><Icon name="edit" size={14} />Editar</button>
           <button className="btn ghost sm danger" onClick={remove}><Icon name="trash" size={14} />Excluir</button>
         </div>
       </section>
@@ -101,14 +106,30 @@ export function Detail({ id, schema }) {
 export function Editor({ id }) {
   const [f, setF] = useState({ code: '', school: '', fullName: '', birthDate: '', email: '', gradeClass: '' })
   const [err, setErr] = useState('')
+  const [found, setFound] = useState(null)
   useEffect(() => {
     if (id) api.participant(id).then((p) => setF({ code: p.code, school: p.school, fullName: p.fullName, birthDate: p.birthDate || '', email: p.email || '', gradeClass: p.gradeClass || '' }))
   }, [id])
+
+  // Autopreenchimento: ao digitar um ID já cadastrado, traz os demais dados
+  useEffect(() => {
+    if (id || !f.code.trim()) { setFound(null); return }
+    const t = setTimeout(() => {
+      api.byCode(f.code.trim()).then((p) => {
+        setFound(p)
+        setF((prev) => ({ ...prev, school: p.school, fullName: p.fullName, birthDate: p.birthDate || '', email: p.email || '', gradeClass: p.gradeClass || '' }))
+      }).catch(() => setFound(null))
+    }, 400)
+    return () => clearTimeout(t)
+  }, [f.code, id])
+
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
   const save = async (e) => {
     e.preventDefault(); setErr('')
+    const submit = () => (id ? api.updateParticipant(id, f) : api.createParticipant(f))
     try {
-      const r = id ? await api.updateParticipant(id, f) : await api.createParticipant(f)
+      let r
+      try { r = await submit() } catch (x) { if (x.cadastro && (await ensureCadastro())) r = await submit(); else throw x }
       toast(id ? 'Dados atualizados' : 'Participante cadastrado'); go('/participantes/' + r.id)
     } catch (x) { setErr(x.message) }
   }
@@ -117,8 +138,15 @@ export function Editor({ id }) {
       <a className="back" href={id ? '#/participantes/' + id : '#/participantes'}><Icon name="left" size={16} />Voltar</a>
       <form className="card formcard" onSubmit={save}>
         <h2>{id ? 'Editar participante' : 'Novo participante'}</h2>
+        <p className="muted small">Campos preenchidos pelo(a) pesquisador(a). O cadastro normalmente já vem carregado: digite o ID para localizar o aluno.</p>
+        {found && (
+          <div className="note info">
+            <b>Este ID já está cadastrado:</b> {found.fullName} · {found.school}{found.gradeClass ? ' · ' + found.gradeClass : ''}.{' '}
+            <button type="button" className="link" onClick={() => go('/participantes/' + found.id)}>Abrir cadastro</button>
+          </div>
+        )}
         <div className="grid2">
-          <label>ID do participante *<input className="inp" value={f.code} onChange={set('code')} required /></label>
+          <label>ID do participante *<input className="inp" value={f.code} onChange={set('code')} required autoFocus={!id} /></label>
           <label>Unidade escolar (FAETEC) *<input className="inp" value={f.school} onChange={set('school')} required /></label>
           <label className="span2">Nome completo *<input className="inp" value={f.fullName} onChange={set('fullName')} required /></label>
           <label>Data de nascimento<input className="inp" type="date" value={f.birthDate} onChange={set('birthDate')} /></label>
@@ -126,7 +154,7 @@ export function Editor({ id }) {
           <label className="span2">E-mail<input className="inp" type="email" value={f.email} onChange={set('email')} /></label>
         </div>
         {err && <div className="err">{err}</div>}
-        <div className="actions"><button type="button" className="btn ghost" onClick={() => history.back()}>Cancelar</button><button className="btn">Salvar</button></div>
+        <div className="actions"><button type="button" className="btn ghost" onClick={() => history.back()}>Cancelar</button><button className="btn" disabled={!!found && !id}>Salvar</button></div>
       </form>
     </>
   )

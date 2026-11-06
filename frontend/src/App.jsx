@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from './api.js'
 import { useRoute, go } from './router.js'
-import { Icon, Toasts, theme } from './ui.jsx'
+import { Icon, Toasts, PasswordModal, theme } from './ui.jsx'
+import { getConfig } from './gate.js'
+import Import from './Import.jsx'
 import Dashboard from './Dashboard.jsx'
 import { People, Detail, Editor } from './People.jsx'
 import { Roster, Fill } from './Collect.jsx'
@@ -13,9 +15,11 @@ export default function App() {
   const [stats, setStats] = useState(null)
   const [err, setErr] = useState('')
   const [q, setQ] = useState('')
+  const [cfg, setCfg] = useState(null)
 
   const refresh = useCallback(() => api.stats().then(setStats).catch(() => {}), [])
   useEffect(() => { api.schema().then((s) => setSchema(s.instruments)).catch((e) => setErr(e.message)) }, [])
+  useEffect(() => { getConfig().then(setCfg) }, [])
   useEffect(() => { refresh() }, [route.path, refresh])
 
   const [p0, p1, p2, p3] = route.parts
@@ -27,6 +31,7 @@ export default function App() {
   if (schema) {
     if (!p0) page = <Dashboard schema={schema} stats={stats} />
     else if (p0 === 'participantes' && !p1) page = <People params={route.params} schema={schema} />
+    else if (p0 === 'participantes' && p1 === 'importar') page = <Import />
     else if (p0 === 'participantes' && p1 === 'novo') page = <Editor id={null} />
     else if (p0 === 'participantes' && p2 === 'editar') page = <Editor id={p1} />
     else if (p0 === 'participantes') page = <Detail id={p1} schema={schema} />
@@ -83,12 +88,16 @@ export default function App() {
           </div>
         </aside>
         <main className="content">
+          {cfg?.banco === 'sqlite' && !['localhost', '127.0.0.1'].includes(location.hostname) && (
+            <div className="note warn"><b>Atenção:</b> este servidor usa um banco temporário (SQLite). Os dados podem ser apagados quando ele reiniciar. Configure o banco Postgres/Supabase antes de coletar.</div>
+          )}
           {err && <div className="note warn">Não foi possível carregar os instrumentos: {err}</div>}
           {!schema && !err && <p className="muted">Carregando…</p>}
           {page}
         </main>
       </div>
       <Toasts />
+      <PasswordModal />
     </div>
   )
 }

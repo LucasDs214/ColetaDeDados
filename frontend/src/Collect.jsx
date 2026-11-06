@@ -61,7 +61,15 @@ export function Fill({ inst, moment, pid, schema }) {
       await api.saveResponse(pid, inst, moment, status, data)
       toast(status === 'complete' ? 'Questionário finalizado' : 'Rascunho salvo')
       go(`/q/${inst}/${moment}`)
-    } catch (x) { setErr(x.message); setSaving(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+      return true
+    } catch (x) {
+      setSaving(false)
+      setErr(x.status === 404
+        ? 'Não foi possível salvar: o participante não foi encontrado no servidor (foi excluído ou o servidor foi reiniciado). Suas respostas continuam guardadas neste navegador. Volte à lista, abra o aluno de novo e salve.'
+        : x.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return false
+    }
   }
   return (
     <>
@@ -73,7 +81,7 @@ export function Fill({ inst, moment, pid, schema }) {
       </section>
       <h3 className="ftitle">{def.title}</h3>
       {err && <div className="note warn">{err}</div>}
-      <Form inst={def} ctx={ctx} initial={own?.data} onSave={onSave} saving={saving} />
+      <Form inst={def} ctx={ctx} initial={own?.data} updatedAt={own?.updatedAt} draftKey={`faetec:draft:${pid}:${inst}:${moment}`} onSave={onSave} saving={saving} />
     </>
   )
 }

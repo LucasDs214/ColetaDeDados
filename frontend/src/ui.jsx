@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const P = {
   home: 'M3 11l9-8 9 8v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z',
@@ -72,4 +72,29 @@ export function Toasts() {
     return () => removeEventListener('toast', f)
   }, [])
   return t ? <div className={'toast ' + t.kind}>{t.kind === 'ok' && <Icon name="check" size={16} />} {t.msg}</div> : null
+}
+
+// Modal de senha (cadastro de participantes)
+export const askPassword = (msg) => new Promise((resolve) => window.dispatchEvent(new CustomEvent('askpw', { detail: { msg, resolve } })))
+export function PasswordModal() {
+  const [st, setSt] = useState(null)
+  const [pw, setPw] = useState('')
+  const ref = useRef(null)
+  useEffect(() => {
+    const f = (e) => { setPw(''); setSt(e.detail); setTimeout(() => ref.current?.focus(), 50) }
+    addEventListener('askpw', f)
+    return () => removeEventListener('askpw', f)
+  }, [])
+  if (!st) return null
+  const done = (v) => { st.resolve(v); setSt(null) }
+  return (
+    <div className="modalback" onClick={() => done(null)}>
+      <form className="modal card" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); done(pw) }}>
+        <h3>Senha de cadastro</h3>
+        <p className="muted">{st.msg}</p>
+        <input ref={ref} className="inp" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="off" />
+        <div className="actions"><button type="button" className="btn ghost" onClick={() => done(null)}>Cancelar</button><button className="btn">Confirmar</button></div>
+      </form>
+    </div>
+  )
 }

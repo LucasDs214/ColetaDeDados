@@ -143,16 +143,25 @@ public static class Exporter
         ["renda_media"] = ("CCEB — renda média domiciliar estimada da classe", "numérica", "R$"),
     };
 
+    /// Texto da condição de exibição de uma pergunta (ex.: "q18_aulas_ef_dias ∈ {2, 3}")
+    static string Cond(JsonNode q)
+    {
+        if (q["showIf"] is not JsonNode c) return "";
+        var arr = (c["in"] ?? c["notIn"])?.AsArray();
+        var codes = arr is null ? "" : string.Join(", ", arr.Select(x => x!.GetValue<int>().ToString()));
+        return $"{c["q"]!.GetValue<string>()} {(c["in"] is not null ? "∈" : "∉")} {{{codes}}}";
+    }
+
     /// Dicionário de variáveis (codebook): uma linha por variável (ou por opção de resposta).
     static byte[] Codebook(Schema schema, Opts o)
     {
-        var cols = new List<string> { "instrumento", "variavel", "questao", "enunciado", "tipo", "codigo", "rotulo", "pontos", "unidade", "minimo", "maximo", "referencia" };
+        var cols = new List<string> { "instrumento", "variavel", "questao", "enunciado", "tipo", "codigo", "rotulo", "pontos", "unidade", "minimo", "maximo", "referencia", "condicao" };
         var rows = new List<Dictionary<string, string>>();
-        void Add(string inst, string v, string num, string text, string tipo, string cod = "", string rot = "", string pts = "", string un = "", string mi = "", string ma = "", string rf = "") =>
+        void Add(string inst, string v, string num, string text, string tipo, string cod = "", string rot = "", string pts = "", string un = "", string mi = "", string ma = "", string rf = "", string cond = "") =>
             rows.Add(new()
             {
                 ["instrumento"] = inst, ["variavel"] = v, ["questao"] = num, ["enunciado"] = text, ["tipo"] = tipo, ["codigo"] = cod,
-                ["rotulo"] = rot, ["pontos"] = pts, ["unidade"] = un, ["minimo"] = mi, ["maximo"] = ma, ["referencia"] = rf,
+                ["rotulo"] = rot, ["pontos"] = pts, ["unidade"] = un, ["minimo"] = mi, ["maximo"] = ma, ["referencia"] = rf, ["condicao"] = cond,
             });
 
         Add("cadastro", "codigo", "5", "ID do participante", "texto");
@@ -170,16 +179,17 @@ public static class Exporter
                 var num = q["num"]?.GetValue<string>() ?? "";
                 var text = q["label"]!.GetValue<string>();
                 var rf = q["ref"]?.GetValue<string>() ?? "";
+                var cond = Cond(q);
                 switch (q["type"]!.GetValue<string>())
                 {
                     case "single":
                         foreach (var opt in q["options"]!.AsArray())
                             Add(iid, qid, num, text, "categórica", Fmt(opt!["v"]!.GetValue<double>(), o), opt["l"]!.GetValue<string>(),
-                                opt["points"] is null ? "" : opt["points"]!.GetValue<int>().ToString(), rf: rf);
+                                opt["points"] is null ? "" : opt["points"]!.GetValue<int>().ToString(), rf: rf, cond: cond);
                         break;
                     case "multi":
                         foreach (var opt in q["options"]!.AsArray())
-                            Add(iid, $"{qid}__{opt!["v"]}", num, $"{text} — {opt["l"]!.GetValue<string>()}", "binária (0/1)", "0 / 1", "0 = não marcou; 1 = marcou", rf: rf);
+                            Add(iid, $"{qid}__{opt!["v"]}", num, $"{text} — {opt["l"]!.GetValue<string>()}", "binária (0/1)", "0 / 1", "0 = não marcou; 1 = marcou", rf: rf, cond: cond);
                         break;
                     case "meds":
                         Add(iid, $"{qid}_n", num, "Quantidade de medicamentos informados", "numérica");
@@ -189,10 +199,10 @@ public static class Exporter
                         break;
                     case "number":
                         Add(iid, qid, num, text, "numérica", un: q["unit"]?.GetValue<string>() ?? "",
-                            mi: q["min"] is null ? "" : Fmt(q["min"]!.GetValue<double>(), o), ma: q["max"] is null ? "" : Fmt(q["max"]!.GetValue<double>(), o), rf: rf);
+                            mi: q["min"] is null ? "" : Fmt(q["min"]!.GetValue<double>(), o), ma: q["max"] is null ? "" : Fmt(q["max"]!.GetValue<double>(), o), rf: rf, cond: cond);
                         break;
-                    case "date": Add(iid, qid, num, text, "data (AAAA-MM-DD)", rf: rf); break;
-                    default: Add(iid, qid, num, text, "texto", rf: rf); break;
+                    case "date": Add(iid, qid, num, text, "data (AAAA-MM-DD)", rf: rf, cond: cond); break;
+                    default: Add(iid, qid, num, text, "texto", rf: rf, cond: cond); break;
                 }
             }
             foreach (var c in inst["computed"]!.AsArray())

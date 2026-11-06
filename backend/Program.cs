@@ -1,20 +1,32 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
-var builder = WebApplication.CreateBuilder(args);
+// Site (React compilado) em <pasta do app>/wwwroot, independente do diretório de trabalho do container
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = AppContext.BaseDirectory,
+    WebRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot"),
+});
 var cfg = builder.Configuration;
 
-// Banco configurável: "sqlite" (testes locais) ou "postgres" (Supabase / Postgres comum)
+// Banco configurável: "sqlite" (testes locais) ou "postgres" (Supabase / Postgres comum).
+// O tipo é detectado pela própria string de conexão, então Database__Provider é opcional.
 var provider = (cfg["Database:Provider"] ?? "sqlite").Trim().ToLower();
-var conn = cfg.GetConnectionString("Default") ?? throw new Exception("ConnectionStrings:Default não configurada");
+var conn = (cfg.GetConnectionString("Default") ?? throw new Exception("ConnectionStrings:Default não configurada")).Trim().Trim('"', '\'').Trim();
+if (conn.StartsWith("postgres", StringComparison.OrdinalIgnoreCase) || conn.Contains("Host=", StringComparison.OrdinalIgnoreCase)) provider = "postgres";
+if (provider == "postgres") conn = NormalizePg(conn);
 if (provider == "sqlite")
 {
     var file = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(conn).DataSource;
     Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(file))!);
 }
 else if (provider != "postgres") throw new Exception("Database:Provider deve ser 'sqlite' ou 'postgres'");
+Console.WriteLine($"Banco: {provider}");
 
 builder.Services.AddDbContext<Db>(o => { if (provider == "postgres") o.UseNpgsql(conn); else o.UseSqlite(conn); });
 builder.Services.AddSingleton(new Schema(Path.Combine(AppContext.BaseDirectory, "instruments.json")));
@@ -48,11 +60,51 @@ using (var scope = app.Services.CreateScope())
     if (created && cfg.GetValue("SEED_DEMO", true)) Seed.Run(db);
 }
 
+// ---- Trava de acesso opcional (não é login): senha única para quem abrir a URL pública ----
+// Ative definindo ACCESS_PASSWORD (e, se quiser, ACCESS_USER). O navegador mostra a caixa de senha nativa.
+var gatePass = cfg["ACCESS_PASSWORD"];
+if (!string.IsNullOrEmpty(gatePass))
+{
+    var expected = Encoding.UTF8.GetBytes($"{(string.IsNullOrEmpty(cfg["ACCESS_USER"]) ? "faetec" : cfg["ACCESS_USER"])}:{gatePass}");
+    app.Use(async (ctx, next) =>
+    {
+        if (ctx.Request.Path.StartsWithSegments("/api/health")) { await next(); return; }
+        var h = ctx.Request.Headers.Authorization.ToString();
+        if (h.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                if (CryptographicOperations.FixedTimeEquals(Convert.FromBase64String(h[6..].Trim()), expected)) { await next(); return; }
+            }
+            catch (FormatException) { }
+        }
+        ctx.Response.StatusCode = 401;
+        ctx.Response.Headers.WWWAuthenticate = "Basic realm=\"FAETEC Coleta\", charset=\"UTF-8\"";
+    });
+}
+
+// Site (React compilado) servido pela própria API: um único serviço/URL
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+
+// ---- Senha de cadastro (opcional): protege criar/editar/excluir/importar participantes ----
+bool CadastroOk(HttpRequest r)
+{
+    var pw = cfg["CADASTRO_PASSWORD"];
+    if (string.IsNullOrEmpty(pw)) return true;
+    var given = Uri.UnescapeDataString(r.Headers["X-Cadastro-Senha"].ToString());
+    return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(given), Encoding.UTF8.GetBytes(pw));
+}
+IResult CadastroNegado() => Results.Json(new { error = "Senha de cadastro incorreta ou ausente.", cadastro = true }, statusCode: 403);
+
 static DateTime Utc(DateTime d) => DateTime.SpecifyKind(d, DateTimeKind.Utc);
 
 var api = app.MapGroup("/api");
-api.MapGet("/health", () => Results.Ok(new { ok = true }));
+api.MapGet("/health", () => Results.Ok(new { ok = true, banco = provider, site = File.Exists(Path.Combine(AppContext.BaseDirectory, "wwwroot", "index.html")) }));
 api.MapGet("/schema", (Schema s) => Results.Content(s.RawJson, "application/json"));
+api.MapGet("/config", () => Results.Ok(new { banco = provider, cadastroProtegido = !string.IsNullOrEmpty(cfg["CADASTRO_PASSWORD"]) }));
+api.MapPost("/cadastro/check", (HttpRequest req) => CadastroOk(req) ? Results.Ok(new { ok = true }) : CadastroNegado());
 
 // ---- Painel ----
 api.MapGet("/stats", async (Db db, Schema schema) =>
@@ -101,14 +153,46 @@ api.MapGet("/participants", async (Db db, string? q) =>
     return Results.Ok(list);
 });
 
-api.MapPost("/participants", async (ParticipantDto dto, Db db) =>
+api.MapPost("/participants", async (ParticipantDto dto, Db db, HttpRequest req) =>
 {
+    if (!CadastroOk(req)) return CadastroNegado();
     var err = Validate(dto); if (err is not null) return Results.BadRequest(new { error = err });
     if (await db.Participants.AnyAsync(p => p.Code == dto.Code.Trim())) return Results.Conflict(new { error = "Já existe participante com este ID" });
     var p = new Participant();
     Apply(p, dto);
     db.Participants.Add(p); await db.SaveChangesAsync();
     return Results.Ok(new { p.Id });
+});
+
+// Busca por ID do participante (autopreenchimento do cadastro)
+api.MapGet("/participants/by-code/{code}", async (string code, Db db) =>
+{
+    var c = code.Trim();
+    var p = await db.Participants.FirstOrDefaultAsync(x => x.Code == c);
+    if (p is null) return Results.NotFound();
+    return Results.Ok(new { p.Id, p.Code, p.School, p.FullName, birthDate = p.BirthDate?.ToString("yyyy-MM-dd"), p.Email, p.GradeClass });
+});
+
+// Importação em lote do cadastro (cria novos e atualiza os que já existem pelo ID)
+api.MapPost("/participants/import", async (ImportDto dto, Db db, HttpRequest req) =>
+{
+    if (!CadastroOk(req)) return CadastroNegado();
+    var rows = dto.Rows ?? new List<ParticipantDto>();
+    if (rows.Count == 0 || rows.Count > 5000) return Results.BadRequest(new { error = "Envie entre 1 e 5000 linhas." });
+    var existing = await db.Participants.ToDictionaryAsync(p => p.Code);
+    int created = 0, updated = 0;
+    var errors = new List<string>();
+    for (var i = 0; i < rows.Count; i++)
+    {
+        var r = rows[i];
+        var err = Validate(r);
+        if (err is not null) { errors.Add($"Linha {i + 1}: {err}"); continue; }
+        var code = r.Code.Trim();
+        if (existing.TryGetValue(code, out var p)) { Apply(p, r); updated++; }
+        else { p = new Participant(); Apply(p, r); db.Participants.Add(p); existing[code] = p; created++; }
+    }
+    await db.SaveChangesAsync();
+    return Results.Ok(new { created, updated, errors });
 });
 
 api.MapGet("/participants/{id:guid}", async (Guid id, Db db) =>
@@ -122,8 +206,9 @@ api.MapGet("/participants/{id:guid}", async (Guid id, Db db) =>
     });
 });
 
-api.MapPut("/participants/{id:guid}", async (Guid id, ParticipantDto dto, Db db) =>
+api.MapPut("/participants/{id:guid}", async (Guid id, ParticipantDto dto, Db db, HttpRequest req) =>
 {
+    if (!CadastroOk(req)) return CadastroNegado();
     var p = await db.Participants.FindAsync(id);
     if (p is null) return Results.NotFound();
     var err = Validate(dto); if (err is not null) return Results.BadRequest(new { error = err });
@@ -132,8 +217,9 @@ api.MapPut("/participants/{id:guid}", async (Guid id, ParticipantDto dto, Db db)
     return Results.Ok(new { p.Id });
 });
 
-api.MapDelete("/participants/{id:guid}", async (Guid id, Db db) =>
+api.MapDelete("/participants/{id:guid}", async (Guid id, Db db, HttpRequest req) =>
 {
+    if (!CadastroOk(req)) return CadastroNegado();
     var p = await db.Participants.FindAsync(id);
     if (p is null) return Results.NotFound();
     db.Participants.Remove(p); await db.SaveChangesAsync();
@@ -172,7 +258,24 @@ api.MapGet("/export/{what}.csv", async (string what, bool? labels, bool? identif
     return Results.File(bytes, "text/csv; charset=utf-8", $"faetec_{what}_{DateTime.Now:yyyyMMdd_HHmm}{(ident ? "_identificado" : "")}.csv");
 });
 
+app.MapFallbackToFile("index.html");
+
 app.Run();
+
+/// Aceita a string no formato Npgsql ("Host=...;...") ou a URI que o Supabase mostra ("postgresql://usuario:senha@host:5432/postgres").
+static string NormalizePg(string c)
+{
+    if (!c.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) && !c.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)) return c;
+    var u = new Uri(c);
+    var ui = u.UserInfo.Split(':', 2);
+    var db = u.AbsolutePath.Trim('/');
+    return new Npgsql.NpgsqlConnectionStringBuilder
+    {
+        Host = u.Host, Port = u.Port > 0 ? u.Port : 5432, Database = db.Length > 0 ? db : "postgres",
+        Username = Uri.UnescapeDataString(ui[0]), Password = ui.Length > 1 ? Uri.UnescapeDataString(ui[1]) : "",
+        SslMode = Npgsql.SslMode.Require, TrustServerCertificate = true,
+    }.ConnectionString;
+}
 
 static string? Validate(ParticipantDto d)
 {
@@ -192,3 +295,4 @@ static void Apply(Participant p, ParticipantDto d)
 
 record ParticipantDto(string Code, string School, string FullName, string? BirthDate, string? Email, string? GradeClass);
 record ResponseDto(string Status, JsonObject? Data);
+record ImportDto(List<ParticipantDto>? Rows);
